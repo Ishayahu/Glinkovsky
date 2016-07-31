@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Список свободных работников</title>
+</head>
+<body>
+    <a href="/accounts/logout/">Выйти</a>
+    <table>
+        <tr>
+            <td>
+                <form action="" method="post">
+                    {% csrf_token %}
+                    <p>
+                        <select name="necessarily">
+                            {% for cat in categories %}
+                                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </p>
+                    <p>
+                        <input type="submit" value="Требуется">
+                    </p>
+                </form>
+            </td>
+            <td>
+                <form action="" method="post">
+                    {% csrf_token %}
+                    <p>
+                        <select name="unnecessarily">
+                            {% for cat in categories %}
+                                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </p>
+                    <p>
+                        <input type="submit" value="Не требуется">
+                    </p>
+                </form>
+            </td>
+        </tr>
+    </table>
+
+    {% if filter %}
+        <p>Установленный фильтр: <b>{{filter}}</b> <a href="/peoplebd/" title="Сбросить фильтры">X</a> </p>
+    {% endif %}
+    <table border="1">
+        <tr>
+            <th>
+                ФИО
+            </th>
+            <th>
+                Телефон
+            </th>
+            <th>
+                Виды работ
+            </th>
+            <th>
+                Заметка
+            </th>
+            <th>
+
+            </th>
+        </tr>
+        {% for people in peoples %}
+            <tr>
+                <td>
+                    {{people.fio}}
+                </td>
+                <td>
+                    {{ people.tel }}
+                </td>
+                <td>
+                    {%  for cat in people.category.all %}
+                        {{ cat.name }};
+                    {% endfor %}
+                </td>
+                <td>
+                    {{ people.comment }}
+                </td>
+                <td>
+                    <a href="/admin/peoplebd/person/{{people.id}}/change/">Редактировать</a>
+                </td>
+            </tr>
+        {% endfor %}
+
+    </table>
+</body>
+</html>

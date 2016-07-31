@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="40008e59-c862-4687-b439-51b923b1be83" name="DT_G" url="http://172.22.0.138">
+        <fileTransfer host="172.22.0.138" port="22" rootFolder="/usr/home/ishayahu/Glinkovsky" accessType="SFTP" username="ishayahu">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

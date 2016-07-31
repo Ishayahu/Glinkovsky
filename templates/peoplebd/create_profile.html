@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Профиль</title>
+</head>
+<body>
+    <a href="/accounts/logout/">Выйти</a>
+    <form action="" method="post">
+        {% csrf_token %}
+        <p>Ваше имя: <input type="text" name="fio" value="{{fio}}" /></p>
+        <p>Ваш телефон (пример 9057771122): <input type="text" name="tel" /></p>
+        {{category}}
+        {% for cat in categories %}
+            {% if cat.id in category %}
+                <p><input type="checkbox" name="category{{cat.id}}" value="{{cat.id}}" checked> {{cat.name}}</p>
+            {% else %}
+                <p><input type="checkbox" name="category{{cat.id}}" value="{{cat.id}}"> {{cat.name}}</p>
+            {% endif %}
+        {% endfor %}
+        <p>
+            <input type="submit" value="Требуется">
+        </p>
+    </form>
+</body>
+</html>
