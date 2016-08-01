@@ -5,7 +5,8 @@
     <title>Список свободных работников</title>
 </head>
 <body>
-    <a href="/accounts/logout/">Выйти</a>
+    <p><a href="/accounts/logout/">Выйти</a></p>
+    <p><a href="/accounts/register/">Завести нового человека</a></p>
     <table>
         <tr>
             <td>
@@ -38,6 +39,15 @@
                     </p>
                 </form>
             </td>
+            <td>
+                <form action="" method="post">
+                    {% csrf_token %}
+                    <p><input type="checkbox" name="busy"> Занят</p>
+                    <p>
+                        <input type="submit" value="Фильтровать">
+                    </p>
+                </form>
+            </td>
         </tr>
     </table>
 
@@ -56,6 +66,9 @@
                 Виды работ
             </th>
             <th>
+                Рейтинг
+            </th>
+            <th>
                 Заметка
             </th>
             <th>
@@ -63,7 +76,11 @@
             </th>
         </tr>
         {% for people in peoples %}
-            <tr>
+            {% if people.busy %}
+                <tr bgcolor="red">
+            {% else %}
+                <tr bgcolor="white">
+            {% endif %}
                 <td>
                     {{people.fio}}
                 </td>
@@ -76,7 +93,16 @@
                     {% endfor %}
                 </td>
                 <td>
+                    {% if people.rating == None %}
+                    {% else %}
+                    {{ people.rating_verbose }}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if people.comment == None %}
+                    {% else %}
                     {{ people.comment }}
+                    {% endif %}
                 </td>
                 <td>
                     <a href="/admin/peoplebd/person/{{people.id}}/change/">Редактировать</a>
