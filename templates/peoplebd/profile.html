@@ -5,26 +5,44 @@
     <title>Профиль</title>
 </head>
 <body>
+<table>
+    <tr>
+        <td>
+            {% if form.errors %}
+                {% for error in form.non_field_errors %}
+                    <div class="alert alert-error">
+                        <strong>{{ error|escape }}</strong>
+                    </div>
+                {% endfor %}
+            {% endif %}
 
 
-{% if form.errors %}
-    {% for error in form.non_field_errors %}
-        <div class="alert alert-error">
-            <strong>{{ error|escape }}</strong>
-        </div>
-    {% endfor %}
-{% endif %}
+            <a href="/accounts/logout/">Выйти</a>
+            <form action="" method="post">
+                {% csrf_token %}
+                <table>
+                    {{form.as_table}}
+                </table>
+                <p>
+                    <input type="submit" value="Сохранить">
+                </p>
+            </form>
 
+        </td>
+        <td>
+            <form action="" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="year" value="{{year}}">
+                <input type="hidden" name="month" value="{{month}}">
+                <input type="hidden" name="save_cal" value="True">
+                <a href="/peoplebd/user/{{user.id}}/{{prev.year}}/{{prev.month}}/">{{prev.name}}</a>
+                {{calendar|safe}}
+                <a href="/peoplebd/user/{{user.id}}/{{next.year}}/{{next.month}}/">{{next.name}}</a>
+                <p><input type="submit" value="Сохранить"></p>
+            </form>
+        </td>
+    </tr>
+</table>
 
-    <a href="/accounts/logout/">Выйти</a>
-    <form action="" method="post">
-        {% csrf_token %}
-        <table>
-            {{form.as_table}}
-        </table>
-        <p>
-            <input type="submit" value="Сохранить">
-        </p>
-    </form>
 </body>
 </html>

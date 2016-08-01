@@ -27,6 +27,7 @@ class Person(models.Model):
     category = models.ManyToManyField('Category',
                                     related_name = "who_do",
                                     blank = True)
+    busy_days = models.ManyToManyField('Days',related_name="who_busy", blank=True)
     comment = models.TextField(blank = True, null = True)
 
     def rating_verbose (self):
@@ -40,6 +41,14 @@ class Person(models.Model):
 
     class Meta:
         ordering = ['fio',]
+
+class Days(models.Model):
+    year = models.IntegerField()
+    month = models.IntegerField()
+    day = models.IntegerField()
+
+    def __str__(self):
+        return "/".join((str(self.day),str(self.month), str(self.year)))
 
 class Category(models.Model):
     name = models.CharField(max_length = 500)
