@@ -25,7 +25,7 @@ class Person(models.Model):
     )
     login = models.CharField(max_length=140, blank = True,
                              null = True)
-    busy = models.BooleanField()
+    # busy = models.BooleanField()
     category = models.ManyToManyField('Category',
                                     related_name = "who_do",
                                     blank = True)

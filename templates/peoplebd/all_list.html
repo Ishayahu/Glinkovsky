@@ -42,7 +42,13 @@
             <td>
                 <form action="" method="post">
                     {% csrf_token %}
-                    <p><input type="checkbox" name="busy"> Занят</p>
+                    <p>
+                        {% if busy %}
+                            <input type="checkbox" name="busy" checked> Занят
+                        {% else %}
+                            <input type="checkbox" name="busy"> Занят
+                        {% endif %}
+                    </p>
                     <p>
                         <input type="submit" value="Фильтровать">
                     </p>

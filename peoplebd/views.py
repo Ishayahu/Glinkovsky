@@ -12,81 +12,114 @@ admins = ('ishayahu','admin')
 def index(request):
     if request.user.get_username() in admins:
         filter = ''
-        if request.method == 'POST':
-            if 'necessarily' in request.POST:
+        import datetime
+        today = datetime.date.today()
+        try:
+            today_day = Days.objects.get(year=today.year,
+                                         month=today.month,
+                                         day=today.day)
+        except Days.DoesNotExist:
+            # значит, все в этот день точно свободны
+            # но для простоты мы его создадим
+            today_day = Days(year=today.year,
+                             month=today.month,
+                             day=today.day)
+            today_day.save()
 
+        if request.method == 'POST':
+
+
+            # ищем по требованию
+            if 'necessarily' in request.POST:
                 request.session["necessarily"] = request.POST['necessarily']
+                # если уже ставили фильтр по занятости
                 if "busy" in request.session:
+                    # ищем занятых
                     if request.session["busy"]:
-                        peoples = Person.objects.filter(busy=True).filter(
-                            category = request.POST['necessarily'])
+                        peoples = Person.objects.filter(busy_days = today_day).\
+                            filter(category = request.POST['necessarily'])
                         filter = "+" + Category.objects.get(
-                            id = request.POST['necessarily']).name + "; Занятые"
+                            id = request.POST['necessarily']).name + u"; Занятые"
+                    # ищем свободных
                     else:
-                        peoples = Person.objects.filter(busy=False).filter(
+                        peoples = Person.objects.exclude(busy_days = today_day).filter(
                             category = request.POST['necessarily'])
                         filter = "+" + Category.objects.get(
-                            id = request.POST['necessarily']).name + "; Свободные"
+                            id = request.POST['necessarily']).name + u"; Свободные"
+                # на занятость побоку, фильтр не стоит
                 else:
                     peoples = Person.objects.filter(category = request.POST['necessarily'])
+                    busy_peoples_id = [p.id for p in Person.objects.filter(category = request.POST['necessarily']).filter(busy_days=today_day)]
+                    for people in peoples:
+                        if people.id in busy_peoples_id:
+                            people.busy = True
                     filter = "+" + Category.objects.get(id=request.POST['necessarily']).name
+            # аналогично
             elif 'unnecessarily' in request.POST:
                 request.session["unnecessarily"] = request.POST[
                     'unnecessarily']
                 if "busy" in request.session:
                     if request.session["busy"]:
-                        peoples = Person.objects.filter(busy=True).exclude(
+                        peoples = Person.objects.filter(busy_days = today_day).exclude(
                             category = request.POST['unnecessarily'])
                         filter = "-" + Category.objects.get(
-                            id = request.POST['unnecessarily']).name + "; Занятые"
+                            id = request.POST['unnecessarily']).name + u"; Занятые"
                     else:
-                        peoples = Person.objects.filter(busy=False).exclude(
+                        peoples = Person.objects.exclude(busy_days = today_day).exclude(
                             category = request.POST['unnecessarily'])
                         filter = "-" + Category.objects.get(
-                            id = request.POST['unnecessarily']).name + "; Свободные"
+                            id = request.POST['unnecessarily']).name + u"; Свободные"
                 else:
                     peoples = Person.objects.exclude(category = request.POST['unnecessarily'])
+                    busy_peoples_id = [p.id for p in Person.objects.exclude(category = request.POST['unnecessarily']).filter(busy_days=today_day)]
+                    for people in peoples:
+                        if people.id in busy_peoples_id:
+                            people.busy = True
+
                     filter = "-" + Category.objects.get(id=request.POST['unnecessarily']).name
                 # peoples = Person.objects.filter(busy = False).exclude(category = request.POST['unnecessarily'])
                 # filter = "-" + Category.objects.get(id=request.POST['unnecessarily']).name
+            # если учитываем занятость
             elif "busy" in request.POST:
+                # ищем занятых
                 request.session['busy'] = True
                 if "necessarily" in request.session:
                     peoples = Person.objects.filter(
-                        busy = True).filter(
+                        busy_days=today_day).filter(
                         category = request.session['necessarily'])
                     filter = "+" + Category.objects.get(
                         id = request.session[
-                            'necessarily']).name + "; Занятые"
+                            'necessarily']).name + u"; Занятые"
                 elif "unnecessarily" in request.session:
                     peoples = Person.objects.filter(
-                        busy = True).exclude(
+                        busy_days=today_day).exclude(
                         category = request.session['unnecessarily'])
                     filter = "-" + Category.objects.get(
                         id = request.session[
-                            'unnecessarily']).name + "; Занятые"
+                            'unnecessarily']).name + u"; Занятые"
                 else:
-
-                    peoples = Person.objects.filter(busy = True)
+                    # всех занятых
+                    peoples = Person.objects.filter(busy_days = today_day)
                     filter = "Занятые"
-            else: # отмечено свободные
+            else:
+                # отмечено свободные
                 request.session['busy'] = False
                 if "necessarily" in request.session:
-                    peoples = Person.objects.filter(
-                        busy = False).filter(
+                    peoples = Person.objects.exclude(
+                        busy_days=today_day).filter(
                         category = request.session['necessarily'])
                     filter = "+" + Category.objects.get(
                         id = request.session[
-                            'necessarily']).name + "; Свободные"
+                            'necessarily']).name + u"; Свободные"
                 elif "unnecessarily" in request.session:
-                    peoples = Person.objects.filter(
-                        busy = False).exclude(
+                    peoples = Person.objects.exclude(
+                        busy_days=today_day).exclude(
                         category = request.session['unnecessarily'])
                     filter = "-" + Category.objects.get(
                         id = request.session[
-                            'unnecessarily']).name + "; Свободные"
+                            'unnecessarily']).name + u"; Свободные"
                 else:
-                    peoples = Person.objects.filter(busy = False)
+                    peoples = Person.objects.exclude(busy_days = today_day)
                     filter = "Свободные"
 
         else:
@@ -96,13 +129,21 @@ def index(request):
                 del request.session['necessarily']
             if "unnecessarily" in request.session:
                 del request.session['unnecessarily']
+            # вообще всех
             peoples = Person.objects.all()
+            busy_peoples_id = [p.id for p in Person.objects.filter(
+                busy_days=today_day)]
+            for people in peoples:
+                if people.id in busy_peoples_id:
+                    people.busy = True
+
         template = loader.get_template('peoplebd/all_list.html')
         categories = Category.objects.all()
         context = {
             'peoples': peoples,
             'categories': categories,
             'filter': filter,
+            'busy': 'busy' in request.session and request.session['busy'] == True,
         }
         return HttpResponse(template.render(context, request))
     else:
@@ -130,10 +171,10 @@ def profile(request, id=None, year=None, month=None):
     cal = calendar.monthcalendar(year,month)
     prev_month['year'] = (datetime.date(year,month,1)- relativedelta(months=1)).year
     prev_month['month'] = (datetime.date(year,month,1) - relativedelta(months=1)).month
-    prev_month['name'] = calendar.month_name[prev_month['month']] + " " + str(prev_month['year'])
+    prev_month['name'] = calendar.month_name[prev_month['month']].decode('cp1251') + u" " + unicode(prev_month['year'])
     next_month['year'] = (datetime.date(year,month,1) + relativedelta(months=1)).year
     next_month['month'] = (datetime.date(year,month,1) + relativedelta(months=1)).month
-    next_month['name'] = calendar.month_name[next_month['month']] + " " + str(next_month['year'])
+    next_month['name'] = calendar.month_name[next_month['month']].decode('cp1251') + u" " + unicode(next_month['year'])
 
     login = request.user.get_username()
     from peoplebd.forms import ChangeProfile
@@ -158,6 +199,7 @@ def profile(request, id=None, year=None, month=None):
     context = {
         'user': user,
         'categories': categories,
+        # 'calendar': "<b>CAL</b>",
         'calendar': make_calendar(user,year,month),
         'prev': prev_month,
         'next': next_month,
@@ -181,16 +223,18 @@ def profile(request, id=None, year=None, month=None):
                         busy_day = Days(year=year, month=month, day=day)
                         busy_day.save()
                     user.busy_days.add(busy_day)
+                    user.save()
 
                 else:
                     try:
                         busy_day = Days.objects.get(year = year,month = month,day = day)
                         if busy_day.id in busy_days:
                             user.busy_days.remove(busy_day)
+                            user.save()
                     except Days.DoesNotExist:
                         # раз дня нет, значит точно не занят
                         pass
-            user.save()
+            # user.save()
             return HttpResponseRedirect("/peoplebd/user/"+str(id)+"/"+request.POST["year"]+"/"+request.POST["month"]+"/")
         else:
             # сохраняем профиль
@@ -253,23 +297,23 @@ def make_calendar(user,year,month):
     locale.setlocale(locale.LC_ALL, '')
     # mrange = calendar.monthrange(year, month)
     cal = calendar.monthcalendar(year,month)
-    res = "<table border='1'>"
-    res += "<tr><th colspan='7'>"+calendar.month_name[month]+ " "+ str(year)+"</th></tr>"
+    res = u"<table border='1'>"
+    res += u"<tr><th colspan='7'>"+calendar.month_name[month].decode('cp1251')+ u" "+ unicode(year)+u"</th></tr>"
     weekdaynames = calendar.weekheader(2).split(" ")
-    res += "<tr>"
+    res += u"<tr>"
     for wdn in weekdaynames:
-        res += "<th>"+wdn+"</th>"
-    res += "</tr>"
+        res += u"<th>"+wdn.decode('cp1251')+u"</th>"
+    res += u"</tr>"
     for week in cal:
-        res += "<tr>"
+        res += u"<tr>"
         for day in week:
             if day == 0:
-                res += "<td></td>"
+                res += u"<td></td>"
             else:
                 if day in busy_days:
-                    res += "<td><input type='checkbox' checked name='day" + str(day) + "'>" + str(day) + "</td>"
+                    res += u"<td><input type='checkbox' checked name='day" + unicode(day) + u"'>" + unicode(day) + u"</td>"
                 else:
-                    res += "<td><input type='checkbox' name='day"+str(day)+"'>"+str(day)+"</td>"
-        res += "</tr>"
-    res += "</table>"
+                    res += u"<td><input type='checkbox' name='day"+unicode(day)+u"'>"+unicode(day)+u"</td>"
+        res += u"</tr>"
+    res += u"</table>"
     return res
