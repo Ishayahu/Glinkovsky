@@ -13,11 +13,11 @@ class Person(models.Model):
     # rating = models.CharField(max_length=30, blank = True,
     #                            null = True)
     RATING_CHOICES = (
-        (0, 'Руки из жопы'),
-        (1, 'Нет отпыта'),
-        (2, 'Норма'),
-        (3, 'Хорош'),
-        (4, 'Мастер от Б-га'),
+        (0, u'Руки из жопы'),
+        (1, u'Нет отпыта'),
+        (2, u'Норма'),
+        (3, u'Хорош'),
+        (4, u'Мастер от Б-га'),
     )
     rating = models.IntegerField(
         choices = RATING_CHOICES,
@@ -36,10 +36,11 @@ class Person(models.Model):
         return dict(Person.RATING_CHOICES).get(self.rating,'')
 
     def __unicode__(self):
-        return u";".join((self.fio,str(self.login)))
+        return self.fio+u";"+self.login
+        # return u";".join((self.fio.decode('utf-8'),self.login.decode('utf-8')))
 
-    def __str__(self):
-        return ";".join((self.fio,str(self.login),str(self.busy)))
+    # def __str__(self):
+    #     return ";".join((self.fio,str(self.login),str(self.busy)))
 
     class Meta:
         ordering = ['fio',]
@@ -52,8 +53,15 @@ class Days(models.Model):
     def __str__(self):
         return "/".join((str(self.day),str(self.month), str(self.year)))
 
+    def __unicode__(self):
+        return u"/".join((str(self.day),str(self.month), str(self.year)))
+
+
 class Category(models.Model):
     name = models.CharField(max_length = 500)
 
     def __str__(self):
         return self.name
+
+    def __unicode__(self):
+        return u"{}".format(self.name)
