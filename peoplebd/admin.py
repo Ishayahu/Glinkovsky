@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+# coding=<utf8>
 from django.contrib import admin
 from peoplebd.models import Person, Category, Days
 

@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+# coding=<utf8>
 from django.db import models
 from django.core.validators import RegexValidator
 

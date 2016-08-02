@@ -51,7 +51,7 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'Glinkovsky.urls'
+ROOT_URLCONF = 'glinkovsky.urls'
 
 TEMPLATES = [
     {
@@ -70,11 +70,12 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'Glinkovsky.wsgi.application'
+WSGI_APPLICATION = 'glinkovsky.wsgi.application'
 
 
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
+
 
 DATABASES = {
     'default': {
@@ -119,5 +120,5 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
-
+STATIC_ROOT = os.path.join(os.path.expanduser('~'), 'domains/ishayahu.myjino.ru/static/')
 STATIC_URL = '/static/'

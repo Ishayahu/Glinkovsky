@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+# coding=<utf8>
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
