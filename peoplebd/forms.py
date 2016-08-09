@@ -13,20 +13,19 @@ class NewPerson(ModelForm):
         labels = {
             'fio': 'ФИО',
             'tel': 'Телефон (10 знаков)',
-            'mail': 'Почта',
             'category': 'Виды работ  (выбор при помощи ctrl)',
         }
         localized_fields = '__all__'
 
 
 class ChangeProfile(ModelForm):
+    mail = forms.EmailField(required=True, label="Почта")
     class Meta:
         model = Person
         fields = ['fio', 'tel', 'mail', 'category']
         labels = {
             'fio': 'ФИО',
             'tel': 'Телефон (10 знаков)',
-            'mail': 'Почта',
             'category': 'Виды работ (выбор при помощи ctrl)',
         }
         localized_fields = '__all__'

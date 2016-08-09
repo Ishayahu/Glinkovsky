@@ -9,7 +9,7 @@ class Person(models.Model):
     phone_regex = RegexValidator(regex = r'^\d{10}$',
                                  message = "Phone number must be entered in the format: '9051112233'. Only 10 digits allowed.")
     tel = models.CharField(validators = [phone_regex], max_length=10)  # validators should be a list
-    mail = models.EmailField(blank = True, null = True)
+    # mail = models.EmailField(blank = True, null = True)
     # rating = models.CharField(max_length=30, blank = True,
     #                            null = True)
     RATING_CHOICES = (

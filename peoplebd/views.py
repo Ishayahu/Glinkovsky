@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
 from peoplebd.models import Person, Category, Day
+from django.contrib.auth.models import User
 
 admins = ('ishayahu','admin')
 
@@ -192,10 +193,12 @@ def profile(request, id=None, year=None, month=None):
         # то есть, открываем страницу типа http://127.0.0.1:8000/peoplebd/user/ - хотим посмотреть свой профиль
         # или запрашиваем свой id
         user = visiter
+        user_django = User.objects.get(username=user.login)
     else:
         # смотрим чужую страницу
         # проверяем, если открывается по id, то админ ли открывает
         user = Person.objects.get(id=id)
+        user_django = User.objects.get(login = user.login)
         if login not in admins:
             return HttpResponseRedirect("/peoplebd/user/")
 
@@ -251,19 +254,20 @@ def profile(request, id=None, year=None, month=None):
             if f.is_valid():
                 # верно - всё сохраняем
                 user.fio = f.cleaned_data['fio']
-                user.mail = f.cleaned_data['mail']
+                # user.mail = f.cleaned_data['mail']
                 user.tel = f.cleaned_data['tel']
-                # user.busy = f.cleaned_data['busy']
+                user_django.email = f.cleaned_data['mail']
                 user.category.clear()
                 for cat in f.cleaned_data['category']:
                     user.category.add(cat)
                 user.save()
+                user_django.save()
                 return HttpResponseRedirect("/peoplebd/profile/")
             else:
                 # не верно - просим исправить
                 return HttpResponse(template.render(context, request))
     else:
-        f = ChangeProfile(instance = user)
+        f = ChangeProfile(instance = user, initial={'mail': user_django.email})
         context['form'] = f
         # получаем профиль
         return HttpResponse(template.render(context, request))
