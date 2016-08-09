@@ -29,7 +29,7 @@ class Person(models.Model):
     category = models.ManyToManyField('Category',
                                     related_name = "who_do",
                                     blank = True)
-    busy_days = models.ManyToManyField('Days',related_name="who_busy", blank=True)
+    busy_days = models.ManyToManyField('Day',related_name="who_busy", blank=True)
     comment = models.TextField(blank = True, null = True)
 
     def rating_verbose (self):
@@ -51,7 +51,7 @@ class Person(models.Model):
     class Meta:
         ordering = ['fio',]
 
-class Days(models.Model):
+class Day(models.Model):
     year = models.IntegerField()
     month = models.IntegerField()
     day = models.IntegerField()

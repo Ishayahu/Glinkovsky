@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
-from peoplebd.models import Person, Category, Days
+from peoplebd.models import Person, Category, Day
 
 admins = ('ishayahu','admin')
 
@@ -15,15 +15,15 @@ def index(request):
         import datetime
         today = datetime.date.today()
         try:
-            today_day = Days.objects.get(year=today.year,
-                                         month=today.month,
-                                         day=today.day)
-        except Days.DoesNotExist:
+            today_day = Day.objects.get(year=today.year,
+                                        month=today.month,
+                                        day=today.day)
+        except Day.DoesNotExist:
             # значит, все в этот день точно свободны
             # но для простоты мы его создадим
-            today_day = Days(year=today.year,
-                             month=today.month,
-                             day=today.day)
+            today_day = Day(year=today.year,
+                            month=today.month,
+                            day=today.day)
             today_day.save()
 
         if request.method == 'POST':
@@ -185,7 +185,7 @@ def profile(request, id=None, year=None, month=None):
     try:
         visiter = Person.objects.get(login=login)
     except Person.DoesNotExist:
-        # зареген, но без профиля - создаём профиль
+        # смотрящий зареген, но без профиля - создаём профиль
         return HttpResponseRedirect("/peoplebd/create_profile/")
 
     if id == 0 or id == visiter.id:
@@ -226,20 +226,20 @@ def profile(request, id=None, year=None, month=None):
                 if "day"+str(day) in request.POST:
                     # print(day)
                     try:
-                        busy_day = Days.objects.get(year = year,month = month,day = day)
-                    except Days.DoesNotExist:
-                        busy_day = Days(year=year, month=month, day=day)
+                        busy_day = Day.objects.get(year = year, month = month, day = day)
+                    except Day.DoesNotExist:
+                        busy_day = Day(year=year, month=month, day=day)
                         busy_day.save()
                     user.busy_days.add(busy_day)
                     user.save()
 
                 else:
                     try:
-                        busy_day = Days.objects.get(year = year,month = month,day = day)
+                        busy_day = Day.objects.get(year = year, month = month, day = day)
                         if busy_day.id in busy_days:
                             user.busy_days.remove(busy_day)
                             user.save()
-                    except Days.DoesNotExist:
+                    except Day.DoesNotExist:
                         # раз дня нет, значит точно не занят
                         pass
             # user.save()
