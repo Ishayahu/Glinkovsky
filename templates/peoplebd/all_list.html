@@ -80,6 +80,9 @@
             <th>
 
             </th>
+            <th>
+
+            </th>
         </tr>
         {% for people in peoples %}
             {% if people.busy %}
@@ -112,6 +115,9 @@
                 </td>
                 <td>
                     <a href="/admin/peoplebd/person/{{people.id}}/change/">Редактировать</a>
+                </td>
+                <td>
+                    <a href="/peoplebd/delete_profile/{{people.id}}/" onclick="return confirm('Удалить?')">Удалить</a>
                 </td>
             </tr>
         {% endfor %}

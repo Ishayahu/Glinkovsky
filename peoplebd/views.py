@@ -245,7 +245,7 @@ def profile(request, id=None, year=None, month=None):
                 user.fio = f.cleaned_data['fio']
                 user.mail = f.cleaned_data['mail']
                 user.tel = f.cleaned_data['tel']
-                user.busy = f.cleaned_data['busy']
+                # user.busy = f.cleaned_data['busy']
                 user.category.clear()
                 for cat in f.cleaned_data['category']:
                     user.category.add(cat)
@@ -286,6 +286,18 @@ def create_profile(request):
             return HttpResponse(template.render(context, request))
     else:
         return HttpResponse(template.render(context, request))
+
+@login_required
+def delete_profile(request,id):
+    if request.user.get_username() not in admins:
+        return HttpResponseRedirect("/")
+    from django.contrib.auth.models import User
+    p = Person.objects.get(id=id)
+    pp = User.objects.get(username=p.login)
+    pp.delete()
+    p.delete()
+    return HttpResponseRedirect("/")
+
 
 def make_calendar(user,year,month):
     busy_days = [day.day for day in user.busy_days.filter(year=year).filter(month=month)]
