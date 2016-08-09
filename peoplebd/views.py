@@ -151,7 +151,9 @@ def index(request):
 
 @login_required
 def profile(request, id=None, year=None, month=None):
-
+    if id is None:
+        id = 0
+    id = int(id)
     # получаем год и месяц для календаря и ссылок на прошлый/след месяц
     import datetime
     from dateutil.relativedelta import relativedelta
@@ -178,18 +180,24 @@ def profile(request, id=None, year=None, month=None):
 
     login = request.user.get_username()
     from peoplebd.forms import ChangeProfile
-    if id is None:
-        try:
-            user = Person.objects.get(login = login)
-        except Person.DoesNotExist:
-            # зареген, но без профиля - создаём профиль
-            return HttpResponseRedirect("/peoplebd/create_profile/")
+    # user - тот, чей профиль смотрим
+    # visiter - тот, кто смотрит страницу
+    try:
+        visiter = Person.objects.get(login=login)
+    except Person.DoesNotExist:
+        # зареген, но без профиля - создаём профиль
+        return HttpResponseRedirect("/peoplebd/create_profile/")
+
+    if id == 0 or id == visiter.id:
+        # то есть, открываем страницу типа http://127.0.0.1:8000/peoplebd/user/ - хотим посмотреть свой профиль
+        # или запрашиваем свой id
+        user = visiter
     else:
         # смотрим чужую страницу
         # проверяем, если открывается по id, то админ ли открывает
+        user = Person.objects.get(id=id)
         if login not in admins:
             return HttpResponseRedirect("/peoplebd/user/")
-        user = Person.objects.get(id=id)
 
 
     categories = Category.objects.all()

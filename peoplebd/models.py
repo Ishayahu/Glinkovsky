@@ -36,7 +36,13 @@ class Person(models.Model):
         return dict(Person.RATING_CHOICES).get(self.rating,'')
 
     def __unicode__(self):
-        return self.fio+u";"+self.login
+        id = unicode(self.id)
+        fio = self.fio
+        t = id +u';'+ fio
+        login = self.login
+        return t+u";"+login
+        # return self.fio+u";"+self.login
+        # return unicode(self.id)+u";"+self.fio.decode('utf-8')+u";"+self.login.decode('utf-8')
         # return u";".join((self.fio.decode('utf-8'),self.login.decode('utf-8')))
 
     # def __str__(self):
