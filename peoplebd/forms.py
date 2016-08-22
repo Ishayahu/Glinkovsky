@@ -12,7 +12,7 @@ class NewPerson(ModelForm):
         fields = ['fio','tel','category']
         labels = {
             'fio': 'ФИО',
-            'tel': 'Телефон (10 знаков)',
+            'tel': 'Телефон (10 знаков. Например 9015553322)',
             'category': 'Виды работ  (выбор при помощи ctrl)',
         }
         localized_fields = '__all__'
@@ -25,7 +25,7 @@ class ChangeProfile(ModelForm):
         fields = ['fio', 'tel', 'mail', 'category']
         labels = {
             'fio': 'ФИО',
-            'tel': 'Телефон (10 знаков)',
+            'tel': 'Телефон (10 знаков. Например 9015553322)',
             'category': 'Виды работ (выбор при помощи ctrl)',
         }
         localized_fields = '__all__'

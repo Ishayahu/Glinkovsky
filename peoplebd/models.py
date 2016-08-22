@@ -5,13 +5,9 @@ from django.core.validators import RegexValidator
 
 class Person(models.Model):
     fio = models.CharField(max_length=200)
-    # tel = models.CharField(max_length=10)
     phone_regex = RegexValidator(regex = r'^\d{10}$',
                                  message = "Phone number must be entered in the format: '9051112233'. Only 10 digits allowed.")
     tel = models.CharField(validators = [phone_regex], max_length=10)  # validators should be a list
-    # mail = models.EmailField(blank = True, null = True)
-    # rating = models.CharField(max_length=30, blank = True,
-    #                            null = True)
     RATING_CHOICES = (
         (0, u'Руки из жопы'),
         (1, u'Нет отпыта'),
@@ -25,7 +21,7 @@ class Person(models.Model):
     )
     login = models.CharField(max_length=140, blank = True,
                              null = True)
-    # busy = models.BooleanField()
+    confirmed = models.BooleanField(default=False)
     category = models.ManyToManyField('Category',
                                     related_name = "who_do",
                                     blank = True)

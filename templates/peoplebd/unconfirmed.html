@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Список не подтверждённых работников</title>
+</head>
+<body>
+    <p><a href="/accounts/logout/">Выйти</a></p>
+    <p><a href="/accounts/register/">Завести нового человека</a></p>
+    <p><a href="/peoplebd/">На главную</a></p>
+    <form method="post">
+        {% csrf_token %}
+        <table border="1">
+            <tr>
+                <th>
+
+                </th>
+                <th>
+                    ФИО
+                </th>
+                <th>
+                    Телефон
+                </th>
+                <th>
+                    Виды работ
+                </th>
+                <th>
+                    Рейтинг
+                </th>
+                <th>
+                    Заметка
+                </th>
+                <th>
+
+                </th>
+                <th>
+
+                </th>
+            </tr>
+            {% for people in peoples %}
+                {% if people.busy %}
+                    <tr bgcolor="red">
+                {% else %}
+                    <tr bgcolor="white">
+                {% endif %}
+
+                    <td>
+                        <input type="checkbox" name="{{people.id}}"/>
+                    </td>
+                    <td>
+                        <a href="/peoplebd/user/{{people.id}}/">{{people.fio}}</a>
+                    </td>
+                    <td>
+                        {{ people.tel }}
+                    </td>
+                    <td>
+                        {%  for cat in people.category.all %}
+                            {{ cat.name }};
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% if people.rating == None %}
+                        {% else %}
+                        {{ people.rating_verbose }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if people.comment == None %}
+                        {% else %}
+                        {{ people.comment }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="/admin/peoplebd/person/{{people.id}}/change/">Редактировать</a>
+                    </td>
+                    <td>
+                        <a href="/peoplebd/delete_profile/{{people.id}}/" onclick="return confirm('Удалить?')">Удалить</a>
+                    </td>
+                </tr>
+            {% endfor %}
+
+        </table>
+        <input type="hidden" name="max_id" value="{{max_id}}"/>
+        <input type="submit" value="Подтвердить"/>
+    </form>
+</body>
+</html>

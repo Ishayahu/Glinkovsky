@@ -31,6 +31,7 @@
         </td>
         <td>
             <form action="" method="post">
+                <p>Отмечайте занятые дни</p>
                 {% csrf_token %}
                 <input type="hidden" name="year" value="{{year}}">
                 <input type="hidden" name="month" value="{{month}}">

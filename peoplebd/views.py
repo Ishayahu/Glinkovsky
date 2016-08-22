@@ -12,7 +12,7 @@ admins = ('ishayahu','admin')
 @login_required
 def index(request):
     if request.user.get_username() in admins:
-        filter = ''
+        filter_text = ''
         import datetime
         today = datetime.date.today()
         try:
@@ -28,100 +28,140 @@ def index(request):
             today_day.save()
 
         if request.method == 'POST':
-
-
-            # ищем по требованию
+            # raise NotImplementedError()
+            filter_text = u""
+            # only confirmed
+            peoples = Person.objects.filter(confirmed=True)
+            # обрабатываем нажатые фильтры и сохраняем их
+            # если нажали на кнопку фильтрации по занято
+            if "busy_filter" in request.POST:
+                filter_busy = True
+                # ищем занятых
+                if "busy" in request.POST:
+                    request.session["busy"] = request.POST['busy']
+                else:
+                    if "busy" in request.session:
+                        del request.session["busy"]
+            else:
+                filter_busy = False
             if 'necessarily' in request.POST:
                 request.session["necessarily"] = request.POST['necessarily']
-                # если уже ставили фильтр по занятости
+                if 'unnecessarily' in request.session:
+                    del request.session['unnecessarily']
+            if 'unnecessarily' in request.POST:
+                request.session["unnecessarily"] = request.POST['unnecessarily']
+                if 'necessarily' in request.session:
+                    del request.session['necessarily']
+            # а теперь фильтруем
+            # ищем занятых
+            if filter_busy:
                 if "busy" in request.session:
-                    # ищем занятых
-                    if request.session["busy"]:
-                        peoples = Person.objects.filter(busy_days = today_day).\
-                            filter(category = request.POST['necessarily'])
-                        filter = "+" + Category.objects.get(
-                            id = request.POST['necessarily']).name + u"; Занятые"
+                    peoples = peoples.filter(busy_days = today_day)
+                    filter_text = u"Занятые"
+                else:
                     # ищем свободных
-                    else:
-                        peoples = Person.objects.exclude(busy_days = today_day).filter(
-                            category = request.POST['necessarily'])
-                        filter = "+" + Category.objects.get(
-                            id = request.POST['necessarily']).name + u"; Свободные"
-                # на занятость побоку, фильтр не стоит
-                else:
-                    peoples = Person.objects.filter(category = request.POST['necessarily'])
-                    busy_peoples_id = [p.id for p in Person.objects.filter(category = request.POST['necessarily']).filter(busy_days=today_day)]
-                    for people in peoples:
-                        if people.id in busy_peoples_id:
-                            people.busy = True
-                    filter = "+" + Category.objects.get(id=request.POST['necessarily']).name
-            # аналогично
-            elif 'unnecessarily' in request.POST:
-                request.session["unnecessarily"] = request.POST[
-                    'unnecessarily']
-                if "busy" in request.session:
-                    if request.session["busy"]:
-                        peoples = Person.objects.filter(busy_days = today_day).exclude(
-                            category = request.POST['unnecessarily'])
-                        filter = "-" + Category.objects.get(
-                            id = request.POST['unnecessarily']).name + u"; Занятые"
-                    else:
-                        peoples = Person.objects.exclude(busy_days = today_day).exclude(
-                            category = request.POST['unnecessarily'])
-                        filter = "-" + Category.objects.get(
-                            id = request.POST['unnecessarily']).name + u"; Свободные"
-                else:
-                    peoples = Person.objects.exclude(category = request.POST['unnecessarily'])
-                    busy_peoples_id = [p.id for p in Person.objects.exclude(category = request.POST['unnecessarily']).filter(busy_days=today_day)]
-                    for people in peoples:
-                        if people.id in busy_peoples_id:
-                            people.busy = True
-
-                    filter = "-" + Category.objects.get(id=request.POST['unnecessarily']).name
-                # peoples = Person.objects.filter(busy = False).exclude(category = request.POST['unnecessarily'])
-                # filter = "-" + Category.objects.get(id=request.POST['unnecessarily']).name
-            # если учитываем занятость
-            elif "busy" in request.POST:
-                # ищем занятых
-                request.session['busy'] = True
-                if "necessarily" in request.session:
-                    peoples = Person.objects.filter(
-                        busy_days=today_day).filter(
-                        category = request.session['necessarily'])
-                    filter = "+" + Category.objects.get(
-                        id = request.session[
-                            'necessarily']).name + u"; Занятые"
-                elif "unnecessarily" in request.session:
-                    peoples = Person.objects.filter(
-                        busy_days=today_day).exclude(
-                        category = request.session['unnecessarily'])
-                    filter = "-" + Category.objects.get(
-                        id = request.session[
-                            'unnecessarily']).name + u"; Занятые"
-                else:
-                    # всех занятых
-                    peoples = Person.objects.filter(busy_days = today_day)
-                    filter = "Занятые"
-            else:
-                # отмечено свободные
-                request.session['busy'] = False
-                if "necessarily" in request.session:
-                    peoples = Person.objects.exclude(
-                        busy_days=today_day).filter(
-                        category = request.session['necessarily'])
-                    filter = "+" + Category.objects.get(
-                        id = request.session[
-                            'necessarily']).name + u"; Свободные"
-                elif "unnecessarily" in request.session:
-                    peoples = Person.objects.exclude(
-                        busy_days=today_day).exclude(
-                        category = request.session['unnecessarily'])
-                    filter = "-" + Category.objects.get(
-                        id = request.session[
-                            'unnecessarily']).name + u"; Свободные"
-                else:
-                    peoples = Person.objects.exclude(busy_days = today_day)
-                    filter = "Свободные"
+                    peoples = peoples.exclude(busy_days = today_day)
+                    filter_text = u"Свободные"
+            if 'necessarily' in request.session:
+                peoples = peoples.filter(category = request.session['necessarily'])
+                filter_text = u"+" + Category.objects.get(
+                            id = request.session['necessarily']).name + u"; " + filter_text
+            elif 'unnecessarily' in request.session:
+                peoples = peoples.exclude(category = request.session['unnecessarily'])
+                filter_text = u"-"+Category.objects.get(
+                            id = request.session['unnecessarily']).name + u"; " + filter_text
+            # # ищем по требованию
+            # if 'necessarily' in request.POST:
+            #     request.session["necessarily"] = request.POST['necessarily']
+            #     # если уже ставили фильтр по занятости
+            #     if "busy" in request.session:
+            #         # ищем занятых
+            #         if request.session["busy"]:
+            #             peoples = Person.objects.filter(busy_days = today_day).\
+            #                 filter(category = request.POST['necessarily'])
+            #             filter = "+" + Category.objects.get(
+            #                 id = request.POST['necessarily']).name + u"; Занятые"
+            #         # ищем свободных
+            #         else:
+            #             peoples = Person.objects.exclude(busy_days = today_day).filter(
+            #                 category = request.POST['necessarily'])
+            #             filter = "+" + Category.objects.get(
+            #                 id = request.POST['necessarily']).name + u"; Свободные"
+            #     # на занятость побоку, фильтр не стоит
+            #     else:
+            #         peoples = Person.objects.filter(category = request.POST['necessarily'])
+            #         busy_peoples_id = [p.id for p in Person.objects.filter(category = request.POST['necessarily']).filter(busy_days=today_day)]
+            #         for people in peoples:
+            #             if people.id in busy_peoples_id:
+            #                 people.busy = True
+            #         filter = "+" + Category.objects.get(id=request.POST['necessarily']).name
+            # # аналогично
+            # elif 'unnecessarily' in request.POST:
+            #     request.session["unnecessarily"] = request.POST[
+            #         'unnecessarily']
+            #     if "busy" in request.session:
+            #         if request.session["busy"]:
+            #             peoples = Person.objects.filter(busy_days = today_day).exclude(
+            #                 category = request.POST['unnecessarily'])
+            #             filter = "-" + Category.objects.get(
+            #                 id = request.POST['unnecessarily']).name + u"; Занятые"
+            #         else:
+            #             peoples = Person.objects.exclude(busy_days = today_day).exclude(
+            #                 category = request.POST['unnecessarily'])
+            #             filter = "-" + Category.objects.get(
+            #                 id = request.POST['unnecessarily']).name + u"; Свободные"
+            #     else:
+            #         peoples = Person.objects.exclude(category = request.POST['unnecessarily'])
+            #         busy_peoples_id = [p.id for p in Person.objects.exclude(category = request.POST['unnecessarily']).filter(busy_days=today_day)]
+            #         for people in peoples:
+            #             if people.id in busy_peoples_id:
+            #                 people.busy = True
+            #
+            #         filter = "-" + Category.objects.get(id=request.POST['unnecessarily']).name
+            #     # peoples = Person.objects.filter(busy = False).exclude(category = request.POST['unnecessarily'])
+            #     # filter = "-" + Category.objects.get(id=request.POST['unnecessarily']).name
+            # # если учитываем занятость
+            # elif "busy" in request.POST:
+            #     # ищем занятых
+            #     request.session['busy'] = True
+            #     if "necessarily" in request.session:
+            #         peoples = Person.objects.filter(
+            #             busy_days=today_day).filter(
+            #             category = request.session['necessarily'])
+            #         filter = "+" + Category.objects.get(
+            #             id = request.session[
+            #                 'necessarily']).name + u"; Занятые"
+            #     elif "unnecessarily" in request.session:
+            #         peoples = Person.objects.filter(
+            #             busy_days=today_day).exclude(
+            #             category = request.session['unnecessarily'])
+            #         filter = "-" + Category.objects.get(
+            #             id = request.session[
+            #                 'unnecessarily']).name + u"; Занятые"
+            #     else:
+            #         # всех занятых
+            #         peoples = Person.objects.filter(busy_days = today_day)
+            #         filter = "Занятые"
+            # else:
+            #     # отмечено свободные
+            #     request.session['busy'] = False
+            #     if "necessarily" in request.session:
+            #         peoples = Person.objects.exclude(
+            #             busy_days=today_day).filter(
+            #             category = request.session['necessarily'])
+            #         filter = "+" + Category.objects.get(
+            #             id = request.session[
+            #                 'necessarily']).name + u"; Свободные"
+            #     elif "unnecessarily" in request.session:
+            #         peoples = Person.objects.exclude(
+            #             busy_days=today_day).exclude(
+            #             category = request.session['unnecessarily'])
+            #         filter = "-" + Category.objects.get(
+            #             id = request.session[
+            #                 'unnecessarily']).name + u"; Свободные"
+            #     else:
+            #         peoples = Person.objects.exclude(busy_days = today_day)
+            #         filter = "Свободные"
 
         else:
             if "busy" in request.session:
@@ -131,20 +171,63 @@ def index(request):
             if "unnecessarily" in request.session:
                 del request.session['unnecessarily']
             # вообще всех
-            peoples = Person.objects.all()
-            busy_peoples_id = [p.id for p in Person.objects.filter(
-                busy_days=today_day)]
-            for people in peoples:
-                if people.id in busy_peoples_id:
-                    people.busy = True
+            peoples = Person.objects.filter(confirmed = True)
+        busy_peoples_id = [p.id for p in Person.objects.filter(
+            busy_days=today_day)]
+        for people in peoples:
+            if people.id in busy_peoples_id:
+                people.busy = True
 
         template = loader.get_template('peoplebd/all_list.html')
         categories = Category.objects.all()
         context = {
             'peoples': peoples,
             'categories': categories,
-            'filter': filter,
+            'filter': filter_text,
             'busy': 'busy' in request.session and request.session['busy'] == True,
+        }
+        return HttpResponse(template.render(context, request))
+    else:
+        return HttpResponseRedirect("/peoplebd/user/")
+
+@login_required
+def unconfirmed(request):
+    max_id = 0
+    if request.user.get_username() in admins:
+        if request.method == 'POST':
+            max_id = int(request.POST['max_id'])
+            for id in range(max_id):
+                if str(id) in request.POST:
+                    p = Person.objects.get(id=id)
+                    p.confirmed = True
+                    p.save()
+            return HttpResponseRedirect("/")
+        else:
+            peoples = Person.objects.filter(confirmed = False)
+            max_id = max([p.id for p in peoples])+1
+
+        import datetime
+        today = datetime.date.today()
+        try:
+            today_day = Day.objects.get(year=today.year,
+                                        month=today.month,
+                                        day=today.day)
+        except Day.DoesNotExist:
+            # значит, все в этот день точно свободны
+            # но для простоты мы его создадим
+            today_day = Day(year=today.year,
+                            month=today.month,
+                            day=today.day)
+            today_day.save()
+        busy_peoples_id = [p.id for p in Person.objects.filter(
+            busy_days=today_day)]
+        for people in peoples:
+            if people.id in busy_peoples_id:
+                people.busy = True
+        template = loader.get_template('peoplebd/unconfirmed.html')
+        context = {
+            'peoples': peoples,
+            'max_id':max_id,
         }
         return HttpResponse(template.render(context, request))
     else:
@@ -175,9 +258,11 @@ def profile(request, id=None, year=None, month=None):
     prev_month['year'] = (datetime.date(year,month,1)- relativedelta(months=1)).year
     prev_month['month'] = (datetime.date(year,month,1) - relativedelta(months=1)).month
     prev_month['name'] = calendar.month_name[prev_month['month']].decode('cp1251') + u" " + unicode(prev_month['year'])
+    # prev_month['name'] = calendar.month_name[prev_month['month']].decode('utf8') + u" " + unicode(prev_month['year'])
     next_month['year'] = (datetime.date(year,month,1) + relativedelta(months=1)).year
     next_month['month'] = (datetime.date(year,month,1) + relativedelta(months=1)).month
     next_month['name'] = calendar.month_name[next_month['month']].decode('cp1251') + u" " + unicode(next_month['year'])
+    # next_month['name'] = calendar.month_name[next_month['month']].decode('utf8') + u" " + unicode(next_month['year'])
 
     login = request.user.get_username()
     from peoplebd.forms import ChangeProfile
@@ -187,18 +272,27 @@ def profile(request, id=None, year=None, month=None):
         visiter = Person.objects.get(login=login)
     except Person.DoesNotExist:
         # смотрящий зареген, но без профиля - создаём профиль
-        return HttpResponseRedirect("/peoplebd/create_profile/")
+        return HttpResponseRedirect("/peoplebd/create_profile/"+str(id)+"/")
 
     if id == 0 or id == visiter.id:
         # то есть, открываем страницу типа http://127.0.0.1:8000/peoplebd/user/ - хотим посмотреть свой профиль
         # или запрашиваем свой id
         user = visiter
-        user_django = User.objects.get(username=user.login)
+        try:
+            user_django = User.objects.get(username=user.login)
+        except User.DoesNotExist:
+            # хотим посмотреть пользователя, кот. зареген, но без профиля - создаём профиль
+            return HttpResponseRedirect("/peoplebd/create_profile/"+str(id)+"/")
+
     else:
         # смотрим чужую страницу
         # проверяем, если открывается по id, то админ ли открывает
         user = Person.objects.get(id=id)
-        user_django = User.objects.get(login = user.login)
+        try:
+            user_django = User.objects.get(username=user.login)
+        except User.DoesNotExist:
+            # хотим посмотреть пользователя, кот. зареген, но без профиля - создаём профиль
+            return HttpResponseRedirect("/peoplebd/create_profile/"+str(id)+"/")
         if login not in admins:
             return HttpResponseRedirect("/peoplebd/user/")
 
@@ -275,7 +369,7 @@ def profile(request, id=None, year=None, month=None):
 
 
 @login_required
-def create_profile(request):
+def create_profile(request, id=None):
     login = request.user.get_username()
     categories = Category.objects.all()
     from peoplebd.forms import NewPerson
@@ -289,7 +383,10 @@ def create_profile(request):
     if request.method == "POST":
         if f.is_valid():
             user = f.save()
-            user.login = login
+            if id is None:
+                user.login = login
+            else:
+                user.login = User.objects.get(id = id).username
             user.save()
             if user.comment == 'None':
                 user.comment = ""
@@ -323,10 +420,13 @@ def make_calendar(user,year,month):
     cal = calendar.monthcalendar(year,month)
     res = u"<table border='1'>"
     res += u"<tr><th colspan='7'>"+calendar.month_name[month].decode('cp1251')+ u" "+ unicode(year)+u"</th></tr>"
+    # res += u"<tr><th colspan='7'>"+calendar.month_name[month].decode('utf8')+ u" "+ unicode(year)+u"</th></tr>"
     weekdaynames = calendar.weekheader(2).split(" ")
+    # weekdaynames = calendar.weekheader(4).split(" ")
     res += u"<tr>"
     for wdn in weekdaynames:
         res += u"<th>"+wdn.decode('cp1251')+u"</th>"
+        # res += u"<th>"+wdn.decode('utf8')+u"</th>"
     res += u"</tr>"
     for week in cal:
         res += u"<tr>"

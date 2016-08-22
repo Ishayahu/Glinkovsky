@@ -9,6 +9,8 @@ urlpatterns = [
     url(r'user/(\d+)/$', views.profile),
     url(r'user/(\d+)/(\d{4})/(\d{1,2})/$', views.profile),
     url(r'create_profile/$', views.create_profile),
+    url(r'create_profile/(\d+)/$', views.create_profile),
+    url(r'unconfirmed/$', views.unconfirmed),
     url(r'delete_profile/(\d+)/$', views.delete_profile),
     url(r'$', views.index, name='index'),
 
