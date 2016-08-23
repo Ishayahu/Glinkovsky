@@ -76,6 +76,15 @@
                 Рейтинг
             </th>
             <th>
+                Надёжность
+            </th>
+            <th>
+                Район
+            </th>
+            <th>
+                Метро
+            </th>
+            <th>
                 Заметка
             </th>
             <th>
@@ -106,6 +115,24 @@
                     {% if people.rating == None %}
                     {% else %}
                     {{ people.rating_verbose }}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if people.reliability == None %}
+                    {% else %}
+                    {{ people.reliability_verbose }}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if people.home_distinct == None %}
+                    {% else %}
+                    {{ people.home_distinct_verbose }}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if people.home_metro == None %}
+                    {% else %}
+                    {{ people.home_metro_verbose }}
                     {% endif %}
                 </td>
                 <td>
